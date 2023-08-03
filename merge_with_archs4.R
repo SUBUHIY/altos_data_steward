@@ -7,15 +7,34 @@ len_recounts <-1:length(recounts_df$organism)
 updated_df <- read.csv("UPDATED_overlap.csv")
 len_updated <-1:length(updated_df$Dataset_ID)
 
-destination_file_human = "human_gene_v2.2.h5"
-destination_file_mouse = "mouse_gene_v2.2.h5"
 
+#find overlap in GSE Ids between geneformer and recount3 
+#geneformer set is dictated as "updated" as that was name of provided file
+overlap_gse_geneformer_recount <-c()
+
+for (x in len_updated){
+  if ((updated_df$accession[x] %in% recounts_df$series_id) & !(updated_df$accession[x] == "")) {
+    
+    overlap_gse_geneformer_recount <- append(overlap_gse_geneformer_recount,updated_df$accession[x])
+  }
+}
+
+#find number of records for study GSE103618  in Archs4 (its a mouse study)
+sixone8_appr <- c()
+
+for (ind in 1:length(mouse_gse)){
+  if (mouse_gse[ind] == 'GSE103618'){
+    sixone8_appr <- append(sixone8_appr, mouse_gse[ind])
+  }
+  
+
+#make df of geneformer and recount3 that do not overlap with archs4
+#get GSE IDs, organism name, tissue name, study title, and record dataset name
 gse <- c()
 organism <- c()
 tissue_type <- c()
 study_title <- c()
 dataset <- c()
-overlap_gse <-c()
 
 
 for (ind in len_updated)
@@ -64,18 +83,23 @@ for (ind in len_recounts)
   }
   
     
-
+#load df with arrays collected
 non_overlap_recount_updated_df  <- data.frame("repository_id"=gse,
                                    "organism" = organism,
                                    "tissue_type" = tissue_type,
                                    "study title" = study_title,
                                    "dataset" = dataset)
 
+#write to df to csv for access by archs4 parsing that needs to occur on ec2
 write.csv(non_overlap_recount_updated_df,"recount3_geneformer.csv")
 
 recount3_genformer_df <- read.csv("recount3_geneformer.csv")
-  
-# Retrieve information from compressed data
+
+#load in archs4 gene-level h5 files
+destination_file_human = "human_gene_v2.2.h5"
+destination_file_mouse = "mouse_gene_v2.2.h5"
+
+#get columns of interest from archs4
 human_gse = h5read(destination_file_human, "meta/samples/series_id")
 human_source = h5read(destination_file_human, "meta/samples/source_name_ch1")
 mouse_gse = h5read(destination_file_mouse, "meta/samples/series_id")
@@ -87,6 +111,9 @@ archs_sample <- c()
 archs_title <- c()
 archs_dataset <- c()
 
+
+#wrap geoquery db calls in try catch function so that queries with no data found 
+#don't cause code to halt.
 find_title <- function(i) {
   tryCatch(
     {
@@ -105,7 +132,7 @@ find_title <- function(i) {
 }
 
 
-
+#find all unique GSE IDs in archs4  and params listed above.
 for (ind in 1:length(human_gse)){
   if (grepl(",", human_gse[ind], ignore.case=TRUE)){
     gse_list <- strsplit(human_gse[ind], split = ",")
@@ -135,13 +162,14 @@ for (ind in 1:length(mouse_gse)){
   }}
 
 
-  
+#load all data into df
 final_df <-  data.frame("repository_id"=c(recount3_genformer_df$repository_id, archs_gse),
                         "organism" = c(recount3_genformer_df$organism, archs_organism),
                         "tissue_type" = c(recount3_genformer_df$tissue_type, archs_sample),
                         "study_title" = c(recount3_genformer_df$study_title, archs_title),
                         "dataset" = c(recount3_genformer_df$dataset, archs_dataset))
 
+#write df to csv
 write.csv(final_df,"archs4_recount3_geneformer.csv")
 
 })
