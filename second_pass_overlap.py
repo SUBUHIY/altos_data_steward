@@ -3,7 +3,11 @@ import pandas as pd
 merged_df = pd.read_csv("archs4_recount3_geneformer.csv")
 archs4_df = merged_df[merged_df['dataset'] == 'archs4']
 archs4_df_dropna_st = merged_df[merged_df['dataset'] == 'archs4'].dropna(subset=['study_title'])
+
+#count overlap/deleted records for each dataset to add to total
 overlap_dict = {"Geneformer": 0, "recount3": 0}
+
+#delete any records that exist in both geneformer or recount3 and archs4.
 for index, row in merged_df.iterrows():
    dataset = row['dataset']
    if dataset not in ['Geneformer','recount3']:
