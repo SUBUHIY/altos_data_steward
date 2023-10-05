@@ -1,6 +1,0 @@
-Accession column (Column Q) values with no dataset accession given in public repositories is marked as NA.
-NA values are associated with 5 datasets - PMIDs: 29808007 and 30951143; and three datasets from 10x Genomics.
-The NA count is large as there are multiple row entries for PMID 30951143.
-"The three datasets from 10x Genomics populated in Rows 87, 141, 277 are linked to the 10x Genomics datasets page with 629 datasets and do not give information about the specific datasets used in the study."
-"There is no other information about the three 10x datasets that can narrow down the list of datasets, hence they are marked as NA. "
-The list of datasets and other information is provided in Supplementary Table 1 of the publication: https://doi.org/10.1038/s41586-023-06139-9.
